@@ -1,6 +1,9 @@
 const express = require("express");
-const app = express();
 
+const connectdb = require("./config/mongodb");
+
+const app = express();
+connectdb();
 app.get("/", (req, res) => {
   res.send("Hello from Express!"); // Basic route to test
 });
