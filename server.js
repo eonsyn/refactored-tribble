@@ -8,6 +8,7 @@ const Film = require("./Models/Films");
 const RequestFilm = require("./Models/RequestFilm");
 //import routers
 const publicRoute = require("./Routes/publicRoutes");
+const adminRoute = require("./Routes/adminRoute.js");
 
 const app = express();
 connectdb();
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 //Routes
 app.use("/api", publicRoute);
+app.use("/admin", adminRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello from Express!"); // Basic route to test
