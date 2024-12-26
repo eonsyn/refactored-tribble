@@ -4,7 +4,7 @@ const axios = require("axios");
 const jsdom = require("jsdom");
 require("dotenv").config();
 // const authenticateAdmin = require("../middleware/admin.auth.middleware");
-// const RequestFilm = require("../models/RequestFilm");
+const RequestFilm = require("../models/RequestFilm");
 const { JSDOM } = jsdom;
 const Film = require("../Models/Films"); // Replace with the actual path to your Film model
 
@@ -381,5 +381,23 @@ router.get("/film/:id", async (req, res) => {
       .json({ error: "An error occurred while fetching the film." });
   }
 });
+router.post("/request-film", async (req, res) => {
+  const { email, filmName } = req.body;
 
+  // Input validation
+  if (!email || !filmName) {
+    return res
+      .status(400)
+      .json({ message: "Email and Film Name are required" });
+  }
+
+  try {
+    const newRequest = new RequestFilm({ email, filmName });
+    await newRequest.save();
+    res.status(201).json({ message: "Film request submitted successfully!" });
+  } catch (error) {
+    console.error("Error saving film request:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 module.exports = router;
