@@ -95,16 +95,16 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
       releaseDate,
       genre,
       urlOfThumbnail,
-      urlOfPost, // Added urlOfPost here
+      urlOfPost,  
     } = req.body;
 
     // Validation: Check if all required fields are provided
     if (
-      !filmTitle ||
+        !filmTitle ||
       // !downloadData ||
       // !imageData ||
       // !description ||
-      // !urlOfThumbnail ||
+         !urlOfThumbnail ||
       // imdbRating == null || // imdbRating could be 0
       // !directedBy ||
       // !releaseDate ||
