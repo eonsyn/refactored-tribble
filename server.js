@@ -6,6 +6,9 @@ const connectdb = require("./config/mongodb");
 //models import
 const Film = require("./Models/Films");
 
+//import routers
+const publicRoute = require("./Routes/publicRoutes");
+
 const app = express();
 connectdb();
 const corsConfig = {
@@ -19,6 +22,8 @@ app.use(cors(corsConfig));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+//Routes
+app.use("/api", publicRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello from Express!"); // Basic route to test
