@@ -233,6 +233,7 @@ router.get("/test", async (req, res) => {
   }
 });
 
+//combininig alll api and form this api
 router.get("/getData", async (req, res) => {
   try {
     const { url } = req.query;
@@ -246,6 +247,65 @@ router.get("/getData", async (req, res) => {
     });
   } catch (error) {
     console.error("Error in /getData:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+//give it last url to get the download link
+router.post("/testdownload", async (req, res) => {
+  try {
+    const { url } = req.body; // Get the URL from the query parameters
+
+    if (!url) {
+      return res.status(400).json({ error: "URL parameter is required." });
+    }
+
+    // Fetch the data from the provided URL
+    const response = await axios.get(url, {
+      headers: {
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,hi;q=0.6",
+        "Cache-Control": "max-age=0",
+        Cookie: "_lscache_vary=00e02ac3526ebf42934719326cc549fc",
+        DNT: "1",
+        Referer: "https://dudefilms.my/",
+        "Sec-CH-UA":
+          '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+        "Sec-CH-UA-Mobile": "?0",
+        "Sec-CH-UA-Platform": '"Android"',
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent":
+          "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.109 Safari/537.36 CrKey/1.54.248666",
+      },
+      responseType: "arraybuffer",
+    });
+
+    const decodedHtml = Buffer.from(response.data, "binary").toString("utf8");
+
+    // Use jsdom to parse the HTML
+    const dom = new JSDOM(decodedHtml);
+    const document = dom.window.document;
+
+    // Find the <a> tag with the inner text 'Instant DL [10GBPS]'
+    const downloadLink = [...document.querySelectorAll("a")].find((a) =>
+      a.textContent.includes("Instant DL [10GBPS]")
+    );
+
+    if (downloadLink) {
+      // Extract the href attribute
+      const finalLink = downloadLink.href;
+      return res.json({ finalLink });
+    } else {
+      return res.status(404).json({ error: "Download link not found." });
+    }
+  } catch (error) {
+    console.error("Error processing request:", error);
     res.status(500).json({ error: error.message });
   }
 });
