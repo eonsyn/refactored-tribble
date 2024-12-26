@@ -6,7 +6,7 @@ require("dotenv").config();
 // const authenticateAdmin = require("../middleware/admin.auth.middleware");
 // const RequestFilm = require("../models/RequestFilm");
 const { JSDOM } = jsdom;
-// const Film = require("../Models/Films"); // Replace with the actual path to your Film model
+const Film = require("../Models/Films"); // Replace with the actual path to your Film model
 
 // Function to scrape data and extract download links
 const scrapeData = async (url) => {
@@ -307,6 +307,57 @@ router.post("/testdownload", async (req, res) => {
   } catch (error) {
     console.error("Error processing request:", error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// POST it take id and update the save the which is in the  database
+router.post("/updateData", async (req, res) => {
+  try {
+    const { id } = req.body; // Get the film ID from the request body
+
+    if (!id) {
+      return res.status(400).json({ error: "Film ID is required." });
+    }
+
+    // Find the film by ID in the database
+    const film = await Film.findById(id);
+
+    if (!film) {
+      return res.status(404).json({ error: "Film not found." });
+    }
+
+    const { urlOfPost } = film; // Get the URL to call /getData
+
+    // Call /getData with the URL from the database
+    const getDataResponse = await axios.get(
+      `${process.env.BACKENED_URL}/api/getData`,
+      {
+        params: { url: urlOfPost },
+      }
+    );
+
+    const { downloadData, imageData } = getDataResponse.data;
+
+    // Update the film with new downloadData and imageData
+    if (downloadData.length == null || imageData.length == null) {
+      res.json("error try again");
+    }
+    film.downloadData = downloadData;
+    film.imageData = imageData;
+
+    // Save the updated film document
+    await film.save();
+
+    // Respond with success message
+    res.status(200).json({
+      message: "Film data updated successfully!",
+      updatedFilm: film,
+    });
+  } catch (error) {
+    console.error("Error updating film data:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the film data." });
   }
 });
 
