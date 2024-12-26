@@ -143,5 +143,56 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: "An error occurred while saving the film." });
   }
 });
+// PUT /updateFilm/:id to update the data
+router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params; // Extract the film ID from the URL parameter
+    const {
+      filmTitle,
+      imageData,
+      genre,
+      urlOfPost,
+      urlOfThumbnail,
+      downloadData,
+    } = req.body; // Extract the data to update from the request body
+
+    // Validate the request body
+    if (!filmTitle || !urlOfPost || !urlOfThumbnail || !downloadData) {
+      return res.status(400).json({
+        error:
+          "Missing required fields: filmTitle, urlOfPost, urlOfThumbnail, or downloadData.",
+      });
+    }
+
+    // Find the film by ID in the database
+    const film = await Film.findById(id);
+
+    if (!film) {
+      return res.status(404).json({ error: "Film not found." });
+    }
+
+    // Update the film fields with the new data
+    film.filmTitle = filmTitle;
+    film.imageData = imageData || film.imageData; // Optional update
+    film.genre = genre || film.genre; // Optional update
+    film.urlOfPost = urlOfPost;
+    film.urlOfThumbnail = urlOfThumbnail;
+    film.downloadData = downloadData;
+
+    // Save the updated film to the database
+    await film.save();
+
+    // Respond with the updated film
+    res.status(200).json({
+      message: "Film updated successfully!",
+      updatedFilm: film,
+    });
+  } catch (error) {
+    console.error("Error updating film:", error);
+    res.status(500).json({
+      error: "An error occurred while updating the film.",
+    });
+  }
+});
 
 module.exports = router;
