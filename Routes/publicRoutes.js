@@ -3,7 +3,6 @@ const router = express.Router();
 const axios = require("axios");
 const jsdom = require("jsdom");
 require("dotenv").config();
-// const authenticateAdmin = require("../middleware/admin.auth.middleware");
 
 const { JSDOM } = jsdom;
 const Film = require("../Models/Films"); // Replace with the actual path to your Film model

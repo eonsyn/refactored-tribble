@@ -4,7 +4,9 @@ const Admin = require("../Models/Admin");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-
+const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
+const Film = require("../Models/Films");
+const axios = require("axios");
 router.post("/login", async (req, res) => {
   try {
     const { userId, password } = req.body;
@@ -52,6 +54,7 @@ router.post("/login", async (req, res) => {
 });
 
 // router.post("/signup", async (req, res) => {
+
 //   try {
 //     const { userId, password } = req.body;
 
@@ -75,5 +78,70 @@ router.post("/login", async (req, res) => {
 //     res.status(500).json({ message: "Internal server error" });
 //   }
 // });
+
+// POST /sendFormData it take form data to update the data in db
+
+// POST it take id and update the save the which is in the  database
+
+router.post("/sendFormData", authenticateAdmin, async (req, res) => {
+  try {
+    const {
+      filmTitle,
+      downloadData,
+      imageData,
+      description,
+      imdbRating,
+      directedBy,
+      releaseDate,
+      genre,
+      urlOfThumbnail,
+      urlOfPost, // Added urlOfPost here
+    } = req.body;
+
+    // Validation: Check if all required fields are provided
+    if (
+      !filmTitle ||
+      // !downloadData ||
+      // !imageData ||
+      // !description ||
+      // !urlOfThumbnail ||
+      // imdbRating == null || // imdbRating could be 0
+      // !directedBy ||
+      // !releaseDate ||
+      // !genre ||
+      !urlOfPost // Added validation for urlOfPost
+    ) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    // Create a new film document
+    const newFilm = new Film({
+      filmTitle,
+      // downloadData,
+      // imageData,
+      // description,
+      // imdbRating,
+      // directedBy,
+      // releaseDate,
+      // genre,
+      urlOfThumbnail,
+      urlOfPost, // Added urlOfPost here
+    });
+
+    // Save the film document to the database
+    await newFilm.save();
+    const finalResponse = await axios.post(
+      `${process.env.BACKENED_URL}/api/updateData`,
+      { id: newFilm._id.toString() } // Ensure the ID is being passed correctly
+    );
+
+    res
+      .status(201)
+      .json({ message: "Film saved successfully!", film: newFilm });
+  } catch (error) {
+    console.error("Error saving film:", error);
+    res.status(500).json({ error: "An error occurred while saving the film." });
+  }
+});
 
 module.exports = router;

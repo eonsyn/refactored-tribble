@@ -19,7 +19,7 @@ const authenticateAdmin = (req, res, next) => {
 
     // Attach the superadmin info to the request
     req.Admin = decoded;
-    console.log(req.Admin);
+
     next(); // Proceed to the next middleware/route handler
   } catch (error) {
     console.error("Error verifying token:", error);
