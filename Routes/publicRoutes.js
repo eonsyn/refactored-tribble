@@ -361,26 +361,26 @@ router.post("/updateData", async (req, res) => {
   }
 });
 //search film by id
-router.get("/film/:id", async (req, res) => {
-  try {
-    const { id } = req.params; // Get the id from the route parameters
+// router.get("/film/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params; // Get the id from the route parameters
 
-    // Fetch the film from the database by its _id
-    const film = await Film.findById(id);
+//     // Fetch the film from the database by its _id
+//     const film = await Film.findById(id);
 
-    if (!film) {
-      return res.status(404).json({ error: "Film not found." });
-    }
+//     if (!film) {
+//       return res.status(404).json({ error: "Film not found." });
+//     }
 
-    // Respond with the full film data
-    res.status(200).json(film);
-  } catch (error) {
-    console.error("Error fetching film:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while fetching the film." });
-  }
-});
+//     // Respond with the full film data
+//     res.status(200).json(film);
+//   } catch (error) {
+//     console.error("Error fetching film:", error);
+//     res
+//       .status(500)
+//       .json({ error: "An error occurred while fetching the film." });
+//   }
+// });
 router.post("/request-film", async (req, res) => {
   const { email, filmName } = req.body;
 
