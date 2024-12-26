@@ -4,6 +4,7 @@ const axios = require("axios");
 const jsdom = require("jsdom");
 require("dotenv").config();
 
+const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
 const { JSDOM } = jsdom;
 const Film = require("../Models/Films"); // Replace with the actual path to your Film model
 
@@ -310,7 +311,7 @@ router.post("/testdownload", async (req, res) => {
 });
 
 // POST it take id and update the save the which is in the  database
-router.post("/updateData", async (req, res) => {
+router.post("/updateData", authenticateAdmin, async (req, res) => {
   try {
     const { id } = req.body; // Get the film ID from the request body
 
