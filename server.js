@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const connectdb = require("./config/mongodb");
 
 //models import
-const Films = require("./Models/Films");
+const Film = require("./Models/Films");
 
 const app = express();
 connectdb();
