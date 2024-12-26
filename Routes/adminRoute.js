@@ -195,4 +195,28 @@ router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
   }
 });
 
+router.delete("/delete/:id", authenticateAdmin, async (req, res) => {
+  try {
+    const { id } = req.params; // Get the ID from the route parameters
+
+    // Attempt to find and delete the film by its _id
+    const deletedFilm = await Film.findByIdAndDelete(id);
+
+    if (!deletedFilm) {
+      return res.status(404).json({ error: "Film not found." });
+    }
+
+    // Respond with a success message and the deleted film data
+    res.status(200).json({
+      message: "Film deleted successfully.",
+      deletedFilm,
+    });
+  } catch (error) {
+    console.error("Error deleting film:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the film." });
+  }
+});
+
 module.exports = router;
