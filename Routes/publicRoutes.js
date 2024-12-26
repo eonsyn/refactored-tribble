@@ -382,24 +382,4 @@ router.get("/film/:id", async (req, res) => {
   }
 });
 
-router.post("/request-film", async (req, res) => {
-  //   const { email, filmName } = req.body;
-
-  //   // Input validation
-  //   if (!email || !filmName) {
-  //     return res
-  //       .status(400)
-  //       .json({ message: "Email and Film Name are required" });
-  //   }
-
-  //   try {
-  //     const newRequest = new RequestFilm({ email, filmName });
-  //     await newRequest.save();
-  //     res.status(201).json({ message: "Film request submitted successfully!" });
-  //   } catch (error) {
-  //     console.error("Error saving film request:", error);
-  //     res.status(500).json({ message: "Internal server error" });
-  //   }
-  res.send("hi there");
-});
 module.exports = router;

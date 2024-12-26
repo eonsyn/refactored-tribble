@@ -5,7 +5,7 @@ const connectdb = require("./config/mongodb");
 
 //models import
 const Film = require("./Models/Films");
-
+const RequestFilm = require("./Models/RequestFilm");
 //import routers
 const publicRoute = require("./Routes/publicRoutes");
 
@@ -51,6 +51,27 @@ app.get("/home", async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching films." });
   }
 });
+
+app.post("/request-film", async (req, res) => {
+  const { email, filmName } = req.body;
+
+  // Input validation
+  if (!email || !filmName) {
+    return res
+      .status(400)
+      .json({ message: "Email and Film Name are required" });
+  }
+
+  try {
+    const newRequest = new RequestFilm({ email, filmName });
+    await newRequest.save();
+    res.status(201).json({ message: "Film request submitted successfully!" });
+  } catch (error) {
+    console.error("Error saving film request:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 const port = 2300;
 app.listen(port, () => {
   console.log("Server is listening on port 2300");
