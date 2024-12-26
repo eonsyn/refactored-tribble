@@ -81,7 +81,6 @@ const scrapeData = async (url) => {
               imgSrc.startsWith("https://i.imgur.com/") ||
               imgSrc.startsWith("https://i.ibb.co/")
             ) {
-              console.log(imgSrc);
             } else {
               imageData.push(imgSrc);
             }
@@ -89,7 +88,7 @@ const scrapeData = async (url) => {
         });
       }
     });
-    console.log(downloadData, imageData);
+
     return { downloadData, imageData };
   };
 
@@ -246,7 +245,7 @@ router.get("/getData", async (req, res) => {
       imageData: scrapedData.imageData,
     });
   } catch (error) {
-    console.log("Error in /getData:", error);
+    console.error("Error in /getData:", error);
     res.status(500).json({ error: error.message });
   }
 });
