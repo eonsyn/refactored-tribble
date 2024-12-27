@@ -13,7 +13,11 @@ const adminRoute = require("./Routes/adminRoute.js");
 const app = express();
 connectdb();
 const corsConfig = {
+<<<<<<< HEAD
   origin: ["https://moodyfilm.netlify.app", "http://localhost:5173"],
+=======
+  origin: ["https://moodyfilm.netlify.app","http://localhost:5173","https://preeminent-centaur-8c6c49.netlify.app","https://preeminent-centaur-8c6c49.netlify.app/"],
+>>>>>>> caa8ef03fe97247633d959d844e8c133fa546d02
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
 };
