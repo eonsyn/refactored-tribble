@@ -223,13 +223,50 @@ const fetchDownloadHrefs = async (finalUrls) => {
   return downloadResults;
 };
 
-// Test route for scraping
+// Test route it take the final final url and return the direct link to download
 router.get("/test", async (req, res) => {
+  const { url } = req.query;
+
+  if (!url) {
+    return res
+      .status(400)
+      .json({ error: "Please provide a URL in the query parameter." });
+  }
+
   try {
-    const scrapedData = await scrapeData();
-    res.json(scrapedData);
+    const response = await axios.get(url, {
+      maxRedirects: 0, // Disable automatic redirects
+      validateStatus: (status) => status >= 200 && status < 400, // Accept redirect status codes
+    });
+
+    let redirectedUrl = response.headers.location || url;
+
+    // Remove the unwanted prefix
+    const prefix = "https://instant-dl.pages.dev/?url=";
+    if (redirectedUrl.startsWith(prefix)) {
+      redirectedUrl = redirectedUrl.replace(prefix, "");
+    }
+
+    res.json({ redirectedUrl });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (
+      error.response &&
+      error.response.status >= 300 &&
+      error.response.status < 400
+    ) {
+      let redirectedUrl = error.response.headers.location;
+
+      // Remove the unwanted prefix
+      const prefix = "https://instant-dl.pages.dev/?url=";
+      if (redirectedUrl.startsWith(prefix)) {
+        redirectedUrl = redirectedUrl.replace(prefix, "");
+      }
+
+      res.json({ redirectedUrl });
+    } else {
+      console.error("Error fetching redirected URL:", error.message);
+      res.status(500).json({ error: "Failed to fetch redirected URL." });
+    }
   }
 });
 
