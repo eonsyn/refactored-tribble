@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 require("dotenv").config();
 
 // const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
-const { JSDOM } = jsdom;
+
 const Film = require("../Models/Films"); // Replace with the actual path to your Film model
 
 // Function to scrape data and extract download links

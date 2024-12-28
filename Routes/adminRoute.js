@@ -3,6 +3,8 @@ const router = express.Router();
 const Admin = require("../Models/Admin");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
 const bcrypt = require("bcrypt");
 const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
 const Film = require("../Models/Films");
