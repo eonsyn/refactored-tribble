@@ -246,7 +246,7 @@ router.post("/getImdbData", async (req, res) => {
   }
 });
 
-router.post("/sendFormData", async (req, res) => {
+router.post("/sendFormData", authenticateAdmin, async (req, res) => {
   try {
     const {
       filmTitle,
