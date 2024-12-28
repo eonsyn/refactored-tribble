@@ -83,6 +83,8 @@ router.post("/login", async (req, res) => {
 
 // POST it take id and update the save the which is in the  database
 
+router.post("/getImdbData", (req, res) => {});
+
 router.post("/sendFormData", authenticateAdmin, async (req, res) => {
   try {
     const {
