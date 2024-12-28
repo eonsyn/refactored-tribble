@@ -81,5 +81,5 @@ app.post("/request-film", async (req, res) => {
 
 const port = 2300;
 app.listen(port, () => {
-  console.log("Server is listening on port 2300");
+  console.log(`Server running on http://localhost:${port}`);
 });

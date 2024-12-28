@@ -280,8 +280,8 @@ router.get("/getData", async (req, res) => {
     const downloadResults = await fetchDownloadHrefs(finalUrls);
 
     res.json({
-      downloadData: downloadResults,
-      imageData: scrapedData.imageData,
+      TempdownloadData: downloadResults,
+      TempimageData: scrapedData.imageData,
     });
   } catch (error) {
     console.error("Error in /getData:", error);

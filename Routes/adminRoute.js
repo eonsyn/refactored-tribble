@@ -246,7 +246,7 @@ router.post("/getImdbData", async (req, res) => {
   }
 });
 
-router.post("/sendFormData", authenticateAdmin, async (req, res) => {
+router.post("/sendFormData", async (req, res) => {
   try {
     const {
       filmTitle,
@@ -270,28 +270,49 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
+    // Send the ID of the new film to update other data if needed
+    let updatedDownloadData = downloadData; // Keep original downloadData
+    let updatedImageData = imageData; // Keep original imageData
+
+    try {
+      const finalResponse = await axios.get(
+        `${process.env.BACKEND_URL}/api/getData`,
+        {
+          params: {
+            url: urlOfPost,
+          },
+        }
+      );
+
+      // Log the data from the final response
+      const { TempdownloadData, TempimageData } = finalResponse.data;
+
+      // Update downloadData and imageData with fetched data
+      updatedDownloadData = TempdownloadData || updatedDownloadData;
+      updatedImageData = TempimageData || updatedImageData;
+    } catch (error) {
+      console.error("Error during API call:", error.message);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch data from the external API." });
+    }
+
     // Create a new film document
     const newFilm = new Film({
       filmTitle,
-      downloadData, // Add downloadData if required in the Film schema
-      imageData, // Add imageData if required in the Film schema
-      description, // Add description if required in the Film schema
-      imdbRating, // Add imdbRating if required in the Film schema
-      directedBy, // Add directedBy if required in the Film schema
-      releaseDate, // Add releaseDate if required in the Film schema
-      genre, // Add genre if required in the Film schema
+      downloadData: updatedDownloadData, // Use updated data
+      imageData: updatedImageData, // Use updated data
+      description,
+      imdbRating,
+      directedBy,
+      releaseDate,
+      genre,
       urlOfThumbnail,
       urlOfPost,
     });
 
     // Save the film document to the database
     await newFilm.save();
-
-    // Send the ID of the new film to update other data if needed
-    const finalResponse = await axios.post(
-      `${process.env.BACKEND_URL}/api/updateData`, // Fixed typo
-      { id: newFilm._id.toString() } // Ensure the ID is being passed correctly
-    );
 
     // Respond with success message and the saved film data
     res
