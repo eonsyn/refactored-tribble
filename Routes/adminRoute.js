@@ -95,20 +95,13 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
       releaseDate,
       genre,
       urlOfThumbnail,
-      urlOfPost,  
+      urlOfPost,
     } = req.body;
 
     // Validation: Check if all required fields are provided
     if (
-        !filmTitle ||
-      // !downloadData ||
-      // !imageData ||
-      // !description ||
-         !urlOfThumbnail ||
-      // imdbRating == null || // imdbRating could be 0
-      // !directedBy ||
-      // !releaseDate ||
-      // !genre ||
+      !filmTitle ||
+      !urlOfThumbnail ||
       !urlOfPost // Added validation for urlOfPost
     ) {
       return res.status(400).json({ error: "All fields are required." });
@@ -117,24 +110,20 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
     // Create a new film document
     const newFilm = new Film({
       filmTitle,
-      // downloadData,
-      // imageData,
-      // description,
-      // imdbRating,
-      // directedBy,
-      // releaseDate,
-      // genre,
       urlOfThumbnail,
       urlOfPost, // Added urlOfPost here
     });
 
     // Save the film document to the database
     await newFilm.save();
+
+    // Send the ID of the new film to update other data if needed
     const finalResponse = await axios.post(
       `${process.env.BACKENED_URL}/api/updateData`,
       { id: newFilm._id.toString() } // Ensure the ID is being passed correctly
     );
 
+    // Respond with success message and the saved film data
     res
       .status(201)
       .json({ message: "Film saved successfully!", film: newFilm });
@@ -143,6 +132,7 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: "An error occurred while saving the film." });
   }
 });
+
 // PUT /updateFilm/:id to update the data
 router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
   try {
