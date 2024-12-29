@@ -275,7 +275,7 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
     if (urlOfPost) {
       try {
         const { data } = await axios.get(
-          `${process.env.BACKEND_URL}/api/getData`,
+          `https://refactored-tribble.vercel.app/api/getData`,
           {
             params: { url: urlOfPost },
           }
