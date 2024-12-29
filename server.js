@@ -37,28 +37,48 @@ app.get("/", (req, res) => {
 });
 app.get("/home", async (req, res) => {
   try {
-    // Fetch films from the database
-    // Only select the fields _id, filmTitle, urlOfThumbnail, and imdbRating
-    // Sort by createdAt in descending order to show the newest films first
-    const films = await Film.find(
-      {},
-      "_id filmTitle urlOfThumbnail imdbRating"
-    ).sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const skip = (page - 1) * limit;
+    const searchTerm = req.query.search || "";
 
-    // If no films are found, send a 404 response
+    // Build a dynamic search filter for both title and genre
+    const searchFilter = searchTerm
+      ? {
+          $or: [
+            { filmTitle: { $regex: searchTerm, $options: "i" } },
+            { genre: { $regex: searchTerm, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Fetch filtered films with pagination
+    const films = await Film.find(
+      searchFilter,
+      "_id filmTitle urlOfThumbnail imdbRating genre"
+    )
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalFilms = await Film.countDocuments(searchFilter);
+    const totalPages = Math.ceil(totalFilms / limit);
+
     if (!films || films.length === 0) {
       return res.status(404).json({ error: "No films found." });
     }
 
-    // If films are found, send them in the response
-    res.status(200).json(films);
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalFilms,
+      films,
+    });
   } catch (error) {
-    // Handle server errors
     console.error("Error fetching films:", error);
     res.status(500).json({ error: "An error occurred while fetching films." });
   }
 });
-
 app.post("/request-film", async (req, res) => {
   const { email, filmName } = req.body;
 

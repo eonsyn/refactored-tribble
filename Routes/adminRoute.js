@@ -8,6 +8,7 @@ const { JSDOM } = jsdom;
 const bcrypt = require("bcrypt");
 const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
 const Film = require("../Models/Films");
+const RequestFilm = require("../Models/RequestFilm");
 const axios = require("axios");
 
 const extractTitleId = (url) => {
@@ -91,7 +92,22 @@ router.post("/login", async (req, res) => {
 
 // POST it take id and update the save the which is in the  database
 
-router.post("/getImdbData", async (req, res) => {
+router.get("/home", authenticateAdmin, async (req, res) => {
+  try {
+    const films = await Film.find({}, "urlOfThumbnail filmTitle _id").sort({
+      createdAt: -1,
+    }); // Correct query syntax
+    res.status(200).json({
+      message: "Data received successfully",
+      films, // Corrected films variable
+    });
+  } catch (error) {
+    console.error(error); // Properly log the error
+    res.status(500).json({ message: "An error occurred" }); // Clearer error message
+  }
+});
+
+router.post("/getImdbData", authenticateAdmin, async (req, res) => {
   const { url } = req.body; // Access URL from the request body
 
   if (!url) {
@@ -212,9 +228,11 @@ router.post("/getImdbData", async (req, res) => {
         const parsedResponse = JSON.parse(decodedResponse);
 
         // Log the parsed response to the console
-
         storySummary =
+          parsedResponse.data.title.outlines.edges[0].node.plotText.plaidHtml ||
           parsedResponse.data.title.summaries.edges[0].node.plotText.plaidHtml;
+        // storySummary =
+        //   parsedResponse.data.title.summaries.edges[0].node.plotText.plaidHtml;
         const genress = parsedResponse.data.title.genres.genres;
 
         genress.forEach((element) => {
@@ -315,6 +333,20 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
   } catch (error) {
     console.error("Error saving film:", error);
     res.status(500).json({ error: "An error occurred while saving the film." });
+  }
+});
+router.get("/movieRequest", async (req, res) => {
+  try {
+    const requestFilm = await RequestFilm.find();
+    res.status(200).json({
+      message: "Successfully received requested movies",
+      requestFilm, // Corrected key
+    });
+  } catch (error) {
+    console.error(error); // It's good practice to use console.error for errors
+    res.status(500).json({
+      message: "Error during retrieving data",
+    });
   }
 });
 
