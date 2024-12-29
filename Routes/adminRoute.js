@@ -261,45 +261,43 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
       urlOfPost,
     } = req.body;
 
-    // Validation: Check if all required fields are provided
-    if (
-      !filmTitle ||
-      !urlOfThumbnail ||
-      !urlOfPost // Added validation for urlOfPost
-    ) {
-      return res.status(400).json({ error: "All fields are required." });
+    // Validate required fields
+    if (!filmTitle || !urlOfThumbnail || !urlOfPost) {
+      return res.status(400).json({
+        error: "filmTitle, urlOfThumbnail, and urlOfPost are required.",
+      });
     }
 
-    // Send the ID of the new film to update other data if needed
-    let updatedDownloadData = downloadData; // Keep original downloadData
-    let updatedImageData = imageData; // Keep original imageData
+    let updatedDownloadData = downloadData || [];
+    let updatedImageData = imageData || [];
 
-    try {
-      const finalResponse = await axios.get(
-        `${process.env.BACKEND_URL}/api/getData`,
-        {
-          params: {
-            url: urlOfPost,
-          },
-        }
-      );
+    // Fetch additional data from external API
+    if (urlOfPost) {
+      try {
+        const { data } = await axios.get(
+          `${process.env.BACKEND_URL}/api/getData`,
+          {
+            params: { url: urlOfPost },
+          }
+        );
 
-      // Log the data from the final response
-      const { TempdownloadData, TempimageData } = finalResponse.data;
+        const { TempdownloadData, TempimageData } = data;
 
-      // Update downloadData and imageData with fetched data
-      updatedDownloadData = TempdownloadData || updatedDownloadData;
-      updatedImageData = TempimageData || updatedImageData;
-    } catch (error) {
-      console.error("Error during API call:", error.message);
-      return res.status(500).json({ error: error.message });
+        updatedDownloadData = TempdownloadData || updatedDownloadData;
+        updatedImageData = TempimageData || updatedImageData;
+      } catch (apiError) {
+        console.error("Error during API call:", apiError.message);
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch additional data." });
+      }
     }
 
-    // Create a new film document
+    // Create and save a new film document
     const newFilm = new Film({
       filmTitle,
-      downloadData: updatedDownloadData, // Use updated data
-      imageData: updatedImageData, // Use updated data
+      downloadData: updatedDownloadData,
+      imageData: updatedImageData,
       description,
       imdbRating,
       directedBy,
@@ -309,10 +307,8 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
       urlOfPost,
     });
 
-    // Save the film document to the database
     await newFilm.save();
 
-    // Respond with success message and the saved film data
     res
       .status(201)
       .json({ message: "Film saved successfully!", film: newFilm });
