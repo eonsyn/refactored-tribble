@@ -38,7 +38,7 @@ app.get("/", (req, res) => {
 app.get("/home", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = 15;
+    const limit = 16;
     const skip = (page - 1) * limit;
     const searchTerm = req.query.search || "";
 
