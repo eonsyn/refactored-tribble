@@ -292,9 +292,7 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
       updatedImageData = TempimageData || updatedImageData;
     } catch (error) {
       console.error("Error during API call:", error.message);
-      return res
-        .status(500)
-        .json({ error: "Failed to fetch data from the external API." });
+      return res.status(500).json({ error: error.message });
     }
 
     // Create a new film document
