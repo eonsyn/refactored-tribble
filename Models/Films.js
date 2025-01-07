@@ -20,12 +20,17 @@ const filmSchema = new mongoose.Schema({
         type: String,
         // default: null,
       },
+
       error: {
         type: String,
         // default: null,
       },
     },
   ],
+  watchOnline: {
+    type: String,
+    trim: true,
+  },
   imageData: [
     {
       type: String,

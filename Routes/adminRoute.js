@@ -363,6 +363,7 @@ router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
       urlOfPost,
       urlOfThumbnail,
       downloadData,
+      watchOnline,
     } = req.body; // Extract the data to update from the request body
 
     // Validate the request body
@@ -387,6 +388,7 @@ router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
     film.urlOfPost = urlOfPost;
     film.urlOfThumbnail = urlOfThumbnail;
     film.downloadData = downloadData;
+    film.watchOnline = watchOnline;
 
     // Save the updated film to the database
     await film.save();
