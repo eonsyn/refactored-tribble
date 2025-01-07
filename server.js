@@ -52,15 +52,22 @@ app.get("/home", async (req, res) => {
         }
       : {};
 
-    // Fetch filtered films with pagination
-    const films = await Film.find(
+    // If searchTerm is provided, fetch all films matching the search term
+    let filmsQuery = Film.find(
       searchFilter,
       "_id filmTitle urlOfThumbnail imdbRating genre"
-    )
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    );
 
+    // If searchTerm is provided, don't apply pagination to the search query
+    if (!searchTerm) {
+      // Apply pagination only if no searchTerm
+      filmsQuery = filmsQuery.skip(skip).limit(limit);
+    }
+
+    // Fetch filtered films with pagination only when needed
+    const films = await filmsQuery.sort({ createdAt: -1 });
+
+    // Calculate total films and total pages based on the filter (search or not)
     const totalFilms = await Film.countDocuments(searchFilter);
     const totalPages = Math.ceil(totalFilms / limit);
 
@@ -79,6 +86,7 @@ app.get("/home", async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching films." });
   }
 });
+
 app.post("/request-film", async (req, res) => {
   const { email, filmName } = req.body;
 

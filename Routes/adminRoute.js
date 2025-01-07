@@ -11,6 +11,8 @@ const Film = require("../Models/Films");
 const RequestFilm = require("../Models/RequestFilm");
 const axios = require("axios");
 
+const { sendEmail } = require("../Controller/emailController");
+
 const extractTitleId = (url) => {
   const match = url.match(/\/title\/(tt\d+)\//);
   return match ? match[1] : null;
@@ -335,20 +337,20 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: "An error occurred while saving the film." });
   }
 });
-router.get("/movieRequest", async (req, res) => {
-  try {
-    const requestFilm = await RequestFilm.find();
-    res.status(200).json({
-      message: "Successfully received requested movies",
-      requestFilm, // Corrected key
-    });
-  } catch (error) {
-    console.error(error); // It's good practice to use console.error for errors
-    res.status(500).json({
-      message: "Error during retrieving data",
-    });
-  }
-});
+// router.get("/movieRequest", authenticateAdmin,async (req, res) => {
+//   try {
+//     const requestFilm = await RequestFilm.find();
+//     res.status(200).json({
+//       message: "Successfully received requested movies",
+//       requestFilm, // Corrected key
+//     });
+//   } catch (error) {
+//     console.error(error); // It's good practice to use console.error for errors
+//     res.status(500).json({
+//       message: "Error during retrieving data",
+//     });
+//   }
+// });
 
 // PUT /updateFilm/:id to update the data
 router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
@@ -426,4 +428,106 @@ router.delete("/delete/:id", authenticateAdmin, async (req, res) => {
   }
 });
 
+router.get("/requested-film", authenticateAdmin, async (req, res) => {
+  try {
+    // Fetch all requested films from the database
+    const requestedFilms = await RequestFilm.find();
+
+    // Respond with the requested films in JSON format
+    res.status(200).json(requestedFilms);
+  } catch (err) {
+    // Log the error and send a server error response
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error." });
+  }
+});
+//search the film from db
+router.get("/get-requested-film", authenticateAdmin, async (req, res) => {
+  const { filmName } = req.query; // Get the search term from the query parameters
+
+  if (!filmName) {
+    return res.status(400).json({ error: "Film name is required." });
+  }
+
+  try {
+    // Send the request to the external API with the search term as a query parameter
+    const response = await axios.get("http://localhost:2300/home", {
+      params: {
+        search: filmName, // Pass the search term to the API
+      },
+    });
+
+    // Check if the response contains films and return them to the client
+    if (response.data.films && response.data.films.length > 0) {
+      res.status(200).json({ films: response.data.films });
+    } else {
+      res.status(404).json({ message: "No films found." });
+    }
+  } catch (error) {
+    console.error("Error fetching films:", error);
+    res.status(500).json({ error: "An error occurred while fetching films." });
+  }
+});
+
+router.delete("/delete-request/:id", authenticateAdmin, async (req, res) => {
+  const { id } = req.params; // Get the ID from the URL parameter
+
+  try {
+    // Find and delete the film request by ID
+    const deletedRequest = await RequestFilm.findByIdAndDelete(id);
+
+    if (!deletedRequest) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Film request not found." });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Film request deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting film request:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+});
+
+router.post("/send-Email-message", authenticateAdmin, async (req, res) => {
+  const { email, movielink, filmName } = req.body;
+
+  // Validate required fields
+  if (!email || !movielink || !filmName) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing required fields." });
+  }
+
+  try {
+    // Call the sendEmail function
+    await sendEmail(movielink, filmName, email);
+
+    // After email is sent, remove the requested film from the database
+    const deletedRequest = await RequestFilm.findOneAndDelete({
+      email,
+      filmName,
+    });
+
+    if (!deletedRequest) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No matching film request found." });
+    }
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: "Email sent and film request deleted successfully.",
+    });
+  } catch (error) {
+    // Handle any errors from the email sending or deletion process
+    console.error("Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: error.message || "Server error." });
+  }
+});
 module.exports = router;
