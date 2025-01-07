@@ -98,6 +98,27 @@ app.post("/request-film", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+app.get("/get-all-id", async (req, res) => {
+  try {
+    // Fetch only the `_id` field of all films, sorted by `createdAt` in descending order
+    const filmsId = await Film.find({}, "_id").sort({ createdAt: -1 });
+
+    // Send a success response with the data
+    res.status(200).json({
+      success: true,
+      message: "Successfully retrieved all film IDs",
+      data: filmsId,
+    });
+  } catch (error) {
+    // Handle any errors that occur
+    console.error("Error fetching film IDs:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve film IDs",
+      error: error.message,
+    });
+  }
+});
 
 const port = 2300;
 app.listen(port, () => {
