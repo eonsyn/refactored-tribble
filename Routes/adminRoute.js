@@ -451,11 +451,14 @@ router.get("/get-requested-film", authenticateAdmin, async (req, res) => {
 
   try {
     // Send the request to the external API with the search term as a query parameter
-    const response = await axios.get("http://localhost:2300/home", {
-      params: {
-        search: filmName, // Pass the search term to the API
-      },
-    });
+    const response = await axios.get(
+      "https://refactored-tribble.vercel.app/home",
+      {
+        params: {
+          search: filmName, // Pass the search term to the API
+        },
+      }
+    );
 
     // Check if the response contains films and return them to the client
     if (response.data.films && response.data.films.length > 0) {
