@@ -31,7 +31,7 @@ const sendEmail = async (movielink, filmName, email) => {
       to: email,
       subject: `Your Movie is Ready: ${filmName}`,
       html: emailTemplate, // HTML body
-      text: `Hi there!\n\nWe’re excited to let you know that the movie "${filmName}" is now available on Moody Films!\n\nDownload here: ${movielink}\n\nThank you for being part of the Moody Films community!`, // Plain-text fallback
+      text: `Hi there!\n\nWe’re excited to let you know that the movie "${filmName}" is now available on Moody Films!\n\nWatch here: ${movielink}\n\nThank you for being part of the Moody Films community!`, // Plain-text fallback
     };
 
     // Send the email
