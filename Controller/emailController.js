@@ -1,14 +1,15 @@
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config(); // Ensure dotenv is loaded
 
 // Function to send email with HTML template
 const sendEmail = async (movielink, filmName, email) => {
   try {
-    // Create a transporter for Gmail service
+    // Create a transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      secure: true, // True for 465, false for other ports
+      secure: true,
       port: 465,
       auth: {
         user: process.env.MAIL_USER_ARYAN,
@@ -16,28 +17,27 @@ const sendEmail = async (movielink, filmName, email) => {
       },
     });
 
-    // Read the email template
+    // Read and populate the HTML template
     const emailTemplatePath = path.join(__dirname, "emailTemplate.html");
     let emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
 
-    // Replace placeholders with actual data
     emailTemplate = emailTemplate
       .replace("{{movieTitle}}", filmName)
       .replace("{{movieLink}}", movielink);
 
-    // Email content configuration
+    // Email options
     const mailOptions = {
-      from: `Moody Film <${process.env.MAIL_USER_ARYAN}>`,
+      from: `Moody Films <${process.env.MAIL_USER_ARYAN}>`,
       to: email,
-      subject: `Moody Film Uploaded: Check Out Your Movie`,
-      html: emailTemplate, // Use the populated email template
+      subject: `Your Movie is Ready: ${filmName}`,
+      html: emailTemplate, // HTML body
+      text: `Hi there!\n\nWe’re excited to let you know that the movie "${filmName}" is now available on Moody Films!\n\nDownload here: ${movielink}\n\nThank you for being part of the Moody Films community!`, // Plain-text fallback
     };
 
-    // Sending the email
+    // Send the email
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.response);
+    console.log("Email sent successfully:", info.response);
   } catch (error) {
-    // Log any errors during the sending process
     console.error("Error sending email:", error);
     throw new Error("Failed to send email");
   }
