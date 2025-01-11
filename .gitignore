@@ -15,7 +15,7 @@ Thumbs.db
 # Build directories
 dist/
 build/
-
+tempserver.js
 # IDE files
 .vscode/
 .idea/
