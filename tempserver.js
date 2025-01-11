@@ -1,15 +1,20 @@
+// Import required modules
 const express = require("express");
-const router = express.Router();
+const cheerio = require("cheerio");
+// const FormData = require("form-data");
+// const fs = require("fs");
+// const path = require("path");
 const axios = require("axios");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 require("dotenv").config();
+const fs = require("fs");
+const puppeteer = require("puppeteer");
 
-// const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
+// Initialize Express app
+const app = express();
+const port = 3000;
 
-const Film = require("../Models/Films"); // Replace with the actual path to your Film model
-
-// Function to scrape data and extract download links
 const scrapeData = async (url) => {
   if (!url) {
     const url =
@@ -97,31 +102,6 @@ const scrapeData = async (url) => {
 
   return convertData(downloadInfo);
 };
-const fetchMkvLink = async (url) => {
-  try {
-    // Fetch the HTML content using axios
-    const response = await axios.get(url);
-    const htmlContent = response.data;
-
-    // Load the HTML content into cheerio
-    const $ = cheerio.load(htmlContent);
-
-    // Find the first anchor tag with href ending in .mkv
-    const mkvLink = $('a[href$=".mkv"]').attr("href");
-
-    if (mkvLink) {
-      // console.log("Found .mkv link:", mkvLink);
-      return mkvLink; // Return the found .mkv link
-    } else {
-      console.log("No .mkv link found.");
-      return null; // Return null if no link is found
-    }
-  } catch (error) {
-    console.error("Error fetching HTML content:", error.message);
-    return null; // Return null in case of an error
-  }
-};
-// Function to fetch final download links
 const fetchDownloadData = async (downloadData) => {
   const finalUrls = [];
 
@@ -179,7 +159,7 @@ const fetchDownloadData = async (downloadData) => {
 
   return finalUrls;
 };
-// Function to get download Hrefs
+
 const fetchDownloadHrefs = async (finalUrls) => {
   const downloadResults = [];
 
@@ -251,58 +231,37 @@ const fetchDownloadHrefs = async (finalUrls) => {
   return downloadResults;
 };
 
-// Test route it take the final final url and return the direct link to download
-router.get("/test", async (req, res) => {
-  const { url } = req.query;
-
-  if (!url) {
-    return res
-      .status(400)
-      .json({ error: "Please provide a URL in the query parameter." });
-  }
-
+//
+const fetchMkvLink = async (url) => {
   try {
-    const response = await axios.get(url, {
-      maxRedirects: 0, // Disable automatic redirects
-      validateStatus: (status) => status >= 200 && status < 400, // Accept redirect status codes
-    });
+    // Fetch the HTML content using axios
+    const response = await axios.get(url);
+    const htmlContent = response.data;
 
-    let redirectedUrl = response.headers.location || url;
+    // Load the HTML content into cheerio
+    const $ = cheerio.load(htmlContent);
 
-    // Remove the unwanted prefix
-    const prefix = "https://instant-dl.pages.dev/?url=";
-    if (redirectedUrl.startsWith(prefix)) {
-      redirectedUrl = redirectedUrl.replace(prefix, "");
-    }
+    // Find the first anchor tag with href ending in .mkv
+    const mkvLink = $('a[href$=".mkv"]').attr("href");
 
-    res.json({ redirectedUrl });
-  } catch (error) {
-    if (
-      error.response &&
-      error.response.status >= 300 &&
-      error.response.status < 400
-    ) {
-      let redirectedUrl = error.response.headers.location;
-
-      // Remove the unwanted prefix
-      const prefix = "https://instant-dl.pages.dev/?url=";
-      if (redirectedUrl.startsWith(prefix)) {
-        redirectedUrl = redirectedUrl.replace(prefix, "");
-      }
-
-      res.json({ redirectedUrl });
+    if (mkvLink) {
+      // console.log("Found .mkv link:", mkvLink);
+      return mkvLink; // Return the found .mkv link
     } else {
-      console.error("Error fetching redirected URL:", error.message);
-      res.status(500).json({ error: "Failed to fetch redirected URL." });
+      console.log("No .mkv link found.");
+      return null; // Return null if no link is found
     }
+  } catch (error) {
+    console.error("Error fetching HTML content:", error.message);
+    return null; // Return null in case of an error
   }
-});
+};
 
-//combininig alll api and form this api
-router.get("/getData", async (req, res) => {
+app.get("/getData", async (req, res) => {
   try {
     const { url } = req.query;
     const scrapedData = await scrapeData(url);
+
     const finalUrls = await fetchDownloadData(scrapedData.downloadData);
     const downloadResults = await fetchDownloadHrefs(finalUrls);
 
@@ -316,135 +275,7 @@ router.get("/getData", async (req, res) => {
   }
 });
 
-//give it last url to get the download link
-router.post("/testdownload", async (req, res) => {
-  try {
-    const { url } = req.body; // Get the URL from the query parameters
-
-    if (!url) {
-      return res.status(400).json({ error: "URL parameter is required." });
-    }
-
-    // Fetch the data from the provided URL
-    const response = await axios.get(url, {
-      headers: {
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,hi;q=0.6",
-        "Cache-Control": "max-age=0",
-        Cookie: "_lscache_vary=00e02ac3526ebf42934719326cc549fc",
-        DNT: "1",
-        Referer: "https://dudefilms.my/",
-        "Sec-CH-UA":
-          '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-        "Sec-CH-UA-Mobile": "?0",
-        "Sec-CH-UA-Platform": '"Android"',
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-User": "?1",
-        "Upgrade-Insecure-Requests": "1",
-        "User-Agent":
-          "Mozilla/5.0 (Linux; Android) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.109 Safari/537.36 CrKey/1.54.248666",
-      },
-      responseType: "arraybuffer",
-    });
-
-    const decodedHtml = Buffer.from(response.data, "binary").toString("utf8");
-
-    // Use jsdom to parse the HTML
-    const dom = new JSDOM(decodedHtml);
-    const document = dom.window.document;
-
-    // Find the <a> tag with the inner text 'Instant DL [10GBPS]'
-    const downloadLink = [...document.querySelectorAll("a")].find((a) =>
-      a.textContent.includes("Instant DL [10GBPS]")
-    );
-
-    if (downloadLink) {
-      // Extract the href attribute
-      const finalLink = downloadLink.href;
-      return res.json({ finalLink });
-    } else {
-      return res.status(404).json({ error: "Download link not found." });
-    }
-  } catch (error) {
-    console.error("Error processing request:", error);
-    res.status(500).json({ error: error.message });
-  }
+// Start the Express server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
-
-// POST it take id and update the save the which is in the  database
-router.post("/updateData", async (req, res) => {
-  try {
-    const { id } = req.body; // Get the film ID from the request body
-
-    if (!id) {
-      return res.status(400).json({ error: "Film ID is required." });
-    }
-
-    // Find the film by ID in the database
-    const film = await Film.findById(id);
-
-    if (!film) {
-      return res.status(404).json({ error: "Film not found." });
-    }
-
-    const { urlOfPost } = film; // Get the URL to call /getData
-
-    // Call /getData with the URL from the database
-    const getDataResponse = await axios.get(
-      `${process.env.BACKENED_URL}/api/getData`,
-      {
-        params: { url: urlOfPost },
-      }
-    );
-
-    const { downloadData, imageData } = getDataResponse.data;
-
-    // Update the film with new downloadData and imageData
-    if (downloadData.length == null || imageData.length == null) {
-      res.json("error try again");
-    }
-    film.downloadData = downloadData;
-    film.imageData = imageData;
-
-    // Save the updated film document
-    await film.save();
-
-    // Respond with success message
-    res.status(200).json({
-      message: "Film data updated successfully!",
-      updatedFilm: film,
-    });
-  } catch (error) {
-    console.error("Error updating film data:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while updating the film data." });
-  }
-});
-//search film by id
-router.get("/film/:id", async (req, res) => {
-  try {
-    const { id } = req.params; // Get the id from the route parameters
-
-    // Fetch the film from the database by its _id
-    const film = await Film.findById(id);
-
-    if (!film) {
-      return res.status(404).json({ error: "Film not found." });
-    }
-
-    // Respond with the full film data
-    res.status(200).json(film);
-  } catch (error) {
-    console.error("Error fetching film:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while fetching the film." });
-  }
-});
-
-module.exports = router;
