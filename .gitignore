@@ -16,6 +16,7 @@ Thumbs.db
 dist/
 build/
 tempserver.js
+decodedPage.html
 # IDE files
 .vscode/
 .idea/

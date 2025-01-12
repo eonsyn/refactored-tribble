@@ -30,7 +30,7 @@ const scrapeData = async (url) => {
       "Cache-Control": "max-age=0",
       Cookie: "_lscache_vary=00e02ac3526ebf42934719326cc549fc",
       DNT: "1",
-      Referer: "https://dudefilms.diy/",
+      Referer: "https://dudefilms.my/",
       "Sec-CH-UA":
         '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
       "Sec-CH-UA-Mobile": "?0",
@@ -232,8 +232,37 @@ const fetchDownloadHrefs = async (finalUrls) => {
 };
 
 //
-const fetchMkvLink = async (url) => {
+const aetchMkvLink = async (finalLink) => {
   try {
+    console.log("working...");
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    // Set the user-agent and other necessary headers (optional)
+    await page.setUserAgent(
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
+    );
+
+    // Navigate to the URL
+    await page.goto(finalLink, { waitUntil: "domcontentloaded" });
+
+    // Wait for the page to load and settle
+    await page.waitForSelector("body");
+
+    // Get the content after redirection
+    const content = await page.content();
+    const url = await page.evaluate(() => {
+      return window.url || null; // This will access the 'url' variable defined in the script
+    });
+    if (url) {
+      console.log("Extracted URL:", url);
+    } else {
+      console.log("URL not found on the page.");
+    }
+    // console.log(content); // Print the actual HTML content of the redirected page
+
+    // Close the browser
+    await browser.close();
     // Fetch the HTML content using axios
     const response = await axios.get(url);
     const htmlContent = response.data;
@@ -243,9 +272,9 @@ const fetchMkvLink = async (url) => {
 
     // Find the first anchor tag with href ending in .mkv
     const mkvLink = $('a[href$=".mkv"]').attr("href");
-
+    console.log("closed...");
     if (mkvLink) {
-      // console.log("Found .mkv link:", mkvLink);
+      console.log("Found .mkv link:", mkvLink);
       return mkvLink; // Return the found .mkv link
     } else {
       console.log("No .mkv link found.");
@@ -256,7 +285,7 @@ const fetchMkvLink = async (url) => {
     return null; // Return null in case of an error
   }
 };
-// const urlofmkv=fetchMkvLink("")
+
 app.get("/getData", async (req, res) => {
   try {
     const { url } = req.query;
@@ -274,7 +303,15 @@ app.get("/getData", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
+app.get("/test", async (req, res) => {
+  try {
+    const { finalLink } = req.query;
+    const daata = await aetchMkvLink(finalLink);
+    res.json({ message: daata });
+  } catch (err) {
+    console.error(err);
+  }
+});
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

@@ -255,51 +255,67 @@ const fetchDownloadHrefs = async (finalUrls) => {
 
 // Test route it take the final final url and return the direct link to download
 router.get("/test", async (req, res) => {
-  const { url } = req.query;
-
-  if (!url) {
-    return res
-      .status(400)
-      .json({ error: "Please provide a URL in the query parameter." });
-  }
-
   try {
-    const response = await axios.get(url, {
-      maxRedirects: 0, // Disable automatic redirects
-      validateStatus: (status) => status >= 200 && status < 400, // Accept redirect status codes
-    });
-
-    let redirectedUrl = response.headers.location || url;
-
-    // Remove the unwanted prefix
-    const prefix = "https://instant-dl.pages.dev/?url=";
-    if (redirectedUrl.startsWith(prefix)) {
-      redirectedUrl = redirectedUrl.replace(prefix, "");
-    }
-
-    res.json({ redirectedUrl });
-  } catch (error) {
-    if (
-      error.response &&
-      error.response.status >= 300 &&
-      error.response.status < 400
-    ) {
-      let redirectedUrl = error.response.headers.location;
-
-      // Remove the unwanted prefix
-      const prefix = "https://instant-dl.pages.dev/?url=";
-      if (redirectedUrl.startsWith(prefix)) {
-        redirectedUrl = redirectedUrl.replace(prefix, "");
-      }
-
-      res.json({ redirectedUrl });
-    } else {
-      console.error("Error fetching redirected URL:", error.message);
-      res.status(500).json({ error: "Failed to fetch redirected URL." });
-    }
+    const { finalLink } = req.query;
+    const daata = await aetchMkvLink(finalLink);
+    res.json({ message: daata });
+  } catch (err) {
+    console.error(err);
   }
 });
+const aetchMkvLink = async (finalLink) => {
+  try {
+    console.log("working...");
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
+    // Set the user-agent and other necessary headers (optional)
+    await page.setUserAgent(
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
+    );
+
+    // Navigate to the URL
+    await page.goto(finalLink, { waitUntil: "domcontentloaded" });
+
+    // Wait for the page to load and settle
+    await page.waitForSelector("body");
+
+    // Get the content after redirection
+    const content = await page.content();
+    const url = await page.evaluate(() => {
+      return window.url || null; // This will access the 'url' variable defined in the script
+    });
+    if (url) {
+      console.log("Extracted URL:", url);
+    } else {
+      console.log("URL not found on the page.");
+    }
+    // console.log(content); // Print the actual HTML content of the redirected page
+
+    // Close the browser
+    await browser.close();
+    // Fetch the HTML content using axios
+    const response = await axios.get(url);
+    const htmlContent = response.data;
+
+    // Load the HTML content into cheerio
+    const $ = cheerio.load(htmlContent);
+
+    // Find the first anchor tag with href ending in .mkv
+    const mkvLink = $('a[href$=".mkv"]').attr("href");
+    console.log("closed...");
+    if (mkvLink) {
+      console.log("Found .mkv link:", mkvLink);
+      return mkvLink; // Return the found .mkv link
+    } else {
+      console.log("No .mkv link found.");
+      return null; // Return null if no link is found
+    }
+  } catch (error) {
+    console.error("Error fetching HTML content:", error.message);
+    return null; // Return null in case of an error
+  }
+};
 //combininig alll api and form this api
 router.get("/getData", async (req, res) => {
   try {
