@@ -30,7 +30,7 @@ const scrapeData = async (url) => {
       "Cache-Control": "max-age=0",
       Cookie: "_lscache_vary=00e02ac3526ebf42934719326cc549fc",
       DNT: "1",
-      Referer: "https://dudefilms.my/",
+      Referer: "https://dudefilms.diy/",
       "Sec-CH-UA":
         '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
       "Sec-CH-UA-Mobile": "?0",
