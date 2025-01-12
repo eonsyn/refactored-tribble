@@ -313,7 +313,7 @@ const aetchMkvLink = async (finalLink) => {
     }
   } catch (error) {
     console.error("Error fetching HTML content:", error.message);
-    return null; // Return null in case of an error
+    return error; // Return null in case of an error
   }
 };
 //combininig alll api and form this api
