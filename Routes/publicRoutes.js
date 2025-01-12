@@ -4,6 +4,8 @@ const axios = require("axios");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 require("dotenv").config();
+const cheerio = require("cheerio");
+const puppeteer = require("puppeteer");
 
 // const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
 
