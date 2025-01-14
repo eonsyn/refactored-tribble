@@ -33,7 +33,7 @@ app.use("/api", publicRoute);
 app.use("/admin", adminRoute);
 
 app.get("/", (req, res) => {
-  res.send("Hello from Express!"); // Basic route to test
+  res.send("surprise this is robot check!"); // Basic route to test
 });
 app.get("/home", async (req, res) => {
   try {

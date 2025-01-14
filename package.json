@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@sparticuz/chromium": "^131.0.1",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "cheerio": "^1.0.0",
@@ -15,7 +16,15 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
     "nodemailer": "^6.9.16",
-    "puppeteer": "^24.0.0",
     "qs": "^6.13.1"
-  }
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "clone",
+  "description": "\"#this is temp description\"",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "",
+  "license": "ISC"
 }

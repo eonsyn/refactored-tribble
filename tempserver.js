@@ -1,20 +1,14 @@
-// Import required modules
 const express = require("express");
 const cheerio = require("cheerio");
-// const FormData = require("form-data");
-// const fs = require("fs");
-// const path = require("path");
 const axios = require("axios");
+require("dotenv").config();
+
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-require("dotenv").config();
-const fs = require("fs");
-const puppeteer = require("puppeteer");
-
-// Initialize Express app
 const app = express();
 const port = 3000;
 
+// Function to fetch MKV link
 const scrapeData = async (url) => {
   if (!url) {
     const url =
@@ -30,7 +24,7 @@ const scrapeData = async (url) => {
       "Cache-Control": "max-age=0",
       Cookie: "_lscache_vary=00e02ac3526ebf42934719326cc549fc",
       DNT: "1",
-      Referer: "https://dudefilms.my/",
+      Referer: "https://dudefilms.diy/",
       "Sec-CH-UA":
         '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
       "Sec-CH-UA-Mobile": "?0",
@@ -102,12 +96,38 @@ const scrapeData = async (url) => {
 
   return convertData(downloadInfo);
 };
+const fetchMkvLink = async (url) => {
+  try {
+    // Fetch the HTML content using axios
+    const response = await axios.get(url);
+    const htmlContent = response.data;
+
+    // Load the HTML content into cheerio
+    const $ = cheerio.load(htmlContent);
+
+    // Find the first anchor tag with href ending in .mkv
+    const mkvLink = $('a[href$=".mkv"]').attr("href");
+
+    if (mkvLink) {
+      // console.log("Found .mkv link:", mkvLink);
+      return mkvLink; // Return the found .mkv link
+    } else {
+      console.log("No .mkv link found.");
+      return null; // Return null if no link is found
+    }
+  } catch (error) {
+    console.error("Error fetching HTML content:", error.message);
+    return null; // Return null in case of an error
+  }
+};
+// Function to fetch final download links
 const fetchDownloadData = async (downloadData) => {
   const finalUrls = [];
 
   for (const item of downloadData) {
     const url = item.link;
-    console.log(url);
+    //here i have to call external api
+    console.log("tdhis is api call url", url);
     try {
       const fetchResponse = await axios.get(url, {
         headers: {
@@ -159,7 +179,7 @@ const fetchDownloadData = async (downloadData) => {
 
   return finalUrls;
 };
-
+// Function to get download Hrefs
 const fetchDownloadHrefs = async (finalUrls) => {
   const downloadResults = [];
 
@@ -177,46 +197,15 @@ const fetchDownloadHrefs = async (finalUrls) => {
     }
 
     try {
-      // Launch a headless browser instance
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-
-      // Set the user-agent and other necessary headers (optional)
-      await page.setUserAgent(
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
-      );
-
-      // Navigate to the URL
-      await page.goto(finalLink, { waitUntil: "domcontentloaded" });
-
-      // Wait for the page to load and settle
-      await page.waitForSelector("body");
-
-      // Get the content after redirection
-      const content = await page.content();
-      const url = await page.evaluate(() => {
-        return window.url || null; // This will access the 'url' variable defined in the script
-      });
-      if (url) {
-        console.log("Extracted URL:", url);
-      } else {
-        console.log("URL not found on the page.");
-      }
-      // console.log(content); // Print the actual HTML content of the redirected page
-
-      // Close the browser
-      await browser.close();
-
-      // const decodedHtml = content;
-      // fs.writeFileSync("decodedPage.html", decodedHtml, "utf8");
-      const mkvLink = await fetchMkvLink(url);
-      const downloadLink = mkvLink;
+      // Use await to fetch the download link
+      const data = await getlink(finalLink);
+      console.log("API getlink Response:", data.finalLink);
 
       downloadResults.push({
         title,
         finalLink,
-        downloadHref: downloadLink ? downloadLink : null,
-        error: downloadLink ? null : "Download link not found",
+        downloadHref: data.finalLink || null,
+        error: data.finalLink ? null : "Download link not found",
       });
     } catch (error) {
       downloadResults.push({
@@ -231,66 +220,28 @@ const fetchDownloadHrefs = async (finalUrls) => {
   return downloadResults;
 };
 
-//
-const aetchMkvLink = async (finalLink) => {
+const getlink = async (url) => {
   try {
-    console.log("working...");
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    const apiUrl = "https://getlink-1.onrender.com/test";
 
-    // Set the user-agent and other necessary headers (optional)
-    await page.setUserAgent(
-      "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1"
-    );
-
-    // Navigate to the URL
-    await page.goto(finalLink, { waitUntil: "domcontentloaded" });
-
-    // Wait for the page to load and settle
-    await page.waitForSelector("body");
-
-    // Get the content after redirection
-    const content = await page.content();
-    const url = await page.evaluate(() => {
-      return window.url || null; // This will access the 'url' variable defined in the script
+    // Sending GET request with the `finalLink` parameter
+    const response = await axios.get(apiUrl, {
+      params: { finalLink: url },
     });
-    if (url) {
-      console.log("Extracted URL:", url);
-    } else {
-      console.log("URL not found on the page.");
-    }
-    // console.log(content); // Print the actual HTML content of the redirected page
 
-    // Close the browser
-    await browser.close();
-    // Fetch the HTML content using axios
-    const response = await axios.get(url);
-    const htmlContent = response.data;
-
-    // Load the HTML content into cheerio
-    const $ = cheerio.load(htmlContent);
-
-    // Find the first anchor tag with href ending in .mkv
-    const mkvLink = $('a[href$=".mkv"]').attr("href");
-    console.log("closed...");
-    if (mkvLink) {
-      console.log("Found .mkv link:", mkvLink);
-      return mkvLink; // Return the found .mkv link
-    } else {
-      console.log("No .mkv link found.");
-      return null; // Return null if no link is found
-    }
+    // Returning the API response data
+    return response.data;
   } catch (error) {
-    console.error("Error fetching HTML content:", error.message);
-    return null; // Return null in case of an error
+    console.error("Error fetching API data:", error.message);
+    throw error;
   }
 };
 
+//combininig alll api and form this api
 app.get("/getData", async (req, res) => {
   try {
     const { url } = req.query;
     const scrapedData = await scrapeData(url);
-
     const finalUrls = await fetchDownloadData(scrapedData.downloadData);
     const downloadResults = await fetchDownloadHrefs(finalUrls);
 
@@ -303,15 +254,7 @@ app.get("/getData", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-app.get("/test", async (req, res) => {
-  try {
-    const { finalLink } = req.query;
-    const daata = await aetchMkvLink(finalLink);
-    res.json({ message: daata });
-  } catch (err) {
-    console.error(err);
-  }
-});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
