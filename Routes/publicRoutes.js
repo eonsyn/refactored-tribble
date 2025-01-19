@@ -4,8 +4,9 @@ const axios = require("axios");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 const cheerio = require("cheerio");
-
+const { sendReview } = require("../Controller/SendReview/Review");
 require("dotenv").config();
+
 const Film = require("../Models/Films");
 
 // const authenticateAdmin = require("../Middelware/admin.auth.midddleware");
@@ -384,5 +385,7 @@ router.get("/film/:id", async (req, res) => {
       .json({ error: "An error occurred while fetching the film." });
   }
 });
+
+// router.get("/comments/:id", async (req, res) => {});
 
 module.exports = router;

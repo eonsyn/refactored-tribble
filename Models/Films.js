@@ -3,79 +3,82 @@ const mongoose = require("mongoose");
 const filmSchema = new mongoose.Schema({
   filmTitle: {
     type: String,
-    // required: true,
+    required: true, // Film title is required
     trim: true,
   },
   downloadData: [
     {
       title: {
         type: String,
-        // required: true,
       },
       finalLink: {
         type: String,
-        // required: true,
       },
       downloadHref: {
         type: String,
-        // default: null,
+        default: null,
       },
-
       error: {
         type: String,
-        // default: null,
+        default: null,
       },
     },
   ],
   watchOnline: {
     type: String,
     trim: true,
+    default: null,
   },
   imageData: [
     {
       type: String,
-      // required: true,
     },
   ],
   description: {
     type: String,
-    // required: true,
+
     trim: true,
   },
   imdbRating: {
     type: Number,
-    // required: true,
+
     min: 0,
     max: 10,
   },
   directedBy: {
     type: String,
-    // required: true,
+
     trim: true,
   },
   releaseDate: {
     type: Date,
-    // required: true,
   },
   genre: [
     {
       type: String,
-      // required: true,
     },
   ],
-  urlOfPost: {
+  postUrl: {
     type: String,
-    // required: true,
+
     trim: true,
   },
-  urlOfThumbnail: {
+  thumbnailUrl: {
     type: String,
-    // required: true,
+
     trim: true,
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  reviewIds: [
+    {
+      default: 0,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review", // Reference to the Review model
+    },
+  ],
 });
 
-const Film = mongoose.model("Film", filmSchema);
-
-module.exports = Film;
+module.exports = mongoose.model("Film", filmSchema);

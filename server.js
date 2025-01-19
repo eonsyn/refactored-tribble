@@ -9,6 +9,7 @@ const RequestFilm = require("./Models/RequestFilm");
 //import routers
 const publicRoute = require("./Routes/publicRoutes");
 const adminRoute = require("./Routes/adminRoute.js");
+const userRoute = require("./Routes/userRoutes.js");
 
 const app = express();
 connectdb();
@@ -31,6 +32,7 @@ app.use(cookieParser());
 //Routes
 app.use("/api", publicRoute);
 app.use("/admin", adminRoute);
+app.use("/user", userRoute);
 
 app.get("/", (req, res) => {
   res.send("surprise this is robot check!"); // Basic route to test
