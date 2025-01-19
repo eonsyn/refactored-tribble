@@ -37,8 +37,8 @@ const userLogin = async (req, res) => {
     res
       .cookie("user_auth_token", token, {
         httpOnly: true, // Prevent access from client-side JavaScript
-        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-        sameSite: "Lax", // Required for cross-origin cookies
+        secure: true, // Use secure cookies in production
+        sameSite: "None", // Required for cross-origin cookies
         maxAge: 259200000, // 3 days
       })
       .status(200)
