@@ -58,12 +58,12 @@ const filmSchema = new mongoose.Schema({
       type: String,
     },
   ],
-  postUrl: {
+  urlOfPost: {
     type: String,
 
     trim: true,
   },
-  thumbnailUrl: {
+  urlOfThumbnail: {
     type: String,
 
     trim: true,

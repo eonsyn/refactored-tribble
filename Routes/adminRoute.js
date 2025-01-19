@@ -314,6 +314,7 @@ router.post("/sendFormData", authenticateAdmin, async (req, res) => {
     }
 
     // Create and save a new film document
+
     const newFilm = new Film({
       filmTitle,
       downloadData: updatedDownloadData,
@@ -365,7 +366,7 @@ router.put("/updateFilm/:id", authenticateAdmin, async (req, res) => {
       downloadData,
       watchOnline,
     } = req.body; // Extract the data to update from the request body
-
+    console.log(urlOfThumbnail);
     // Validate the request body
     if (!filmTitle || !urlOfPost || !urlOfThumbnail || !downloadData) {
       return res.status(400).json({
