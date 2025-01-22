@@ -17,6 +17,7 @@ dist/
 build/
 tempserver.js
 decodedPage.html
+
 # IDE files
 .vscode/
 .idea/
@@ -25,3 +26,4 @@ decodedPage.html
 # Temporary files
 *.tmp
 *.swp
+frontendproject

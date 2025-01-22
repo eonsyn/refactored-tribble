@@ -13,13 +13,18 @@ const userRoute = require("./Routes/userRoutes.js");
 
 const app = express();
 connectdb();
+// const corsConfig = {
+//   origin: [
+//     "https://moodyfilm.netlify.app",
+//     "http://localhost:5173",
+//     "https://preeminent-centaur-8c6c49.netlify.app",
+//     "https://preeminent-centaur-8c6c49.netlify.app/",
+//   ],
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+// };
 const corsConfig = {
-  origin: [
-    "https://moodyfilm.netlify.app",
-    "http://localhost:5173",
-    "https://preeminent-centaur-8c6c49.netlify.app",
-    "https://preeminent-centaur-8c6c49.netlify.app/",
-  ],
+  origin: true, // Allow requests from any origin
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
 };
