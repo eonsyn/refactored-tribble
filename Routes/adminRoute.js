@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
         httpOnly: true, // Prevent access from client-side JavaScript
         secure: true, // Use secure cookies in production
         sameSite: "None", // Required for cross-origin cookies
-        maxAge: 3600000, // 1 hour
+        maxAge: 86400000, // 24 hour
       })
       .status(200)
       .json({ message: "Login successful", token: token });
