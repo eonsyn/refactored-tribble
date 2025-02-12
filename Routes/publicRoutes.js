@@ -425,5 +425,27 @@ router.post("/recommend-movie", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+router.get("/search", async (req, res) => {
+  try {
+    const query = req.query.query;
+    if (!query) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    // Case-insensitive search using regex
+    const movies = await Film.find({
+      title: { $regex: query, $options: "i" }, // Case insensitive search
+    }).select("title poster id");
+
+    if (movies.length === 0) {
+      return res.status(404).json({ message: "No movies found", movies: [] });
+    }
+
+    res.json({ movies });
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 module.exports = router;
