@@ -386,6 +386,44 @@ router.get("/film/:id", async (req, res) => {
   }
 });
 
-// router.get("/comments/:id", async (req, res) => {});
+router.post("/recommend-movie", async (req, res) => {
+  const { genre } = req.body;
+
+  // Validate genre array
+  if (!genre || !Array.isArray(genre) || genre.length === 0) {
+    return res
+      .status(400)
+      .json({ error: "Please provide a non-empty array of genres" });
+  }
+
+  if (genre.length > 10) {
+    return res.status(400).json({
+      error: "You can request recommendations for up to 10 genres only",
+    });
+  }
+
+  try {
+    // Fetch 5 random movies matching the genres (case-insensitive)
+    const recommendedFilms = await Film.aggregate([
+      {
+        $match: {
+          genre: { $in: genre.map((g) => new RegExp(`^${g}$`, "i")) },
+        },
+      },
+      { $sample: { size: 5 } },
+    ]);
+
+    if (!recommendedFilms.length) {
+      return res
+        .status(404)
+        .json({ error: "No movies found for the selected genres" });
+    }
+
+    res.json({ films: recommendedFilms });
+  } catch (error) {
+    console.error("Error fetching recommended movies:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 module.exports = router;
