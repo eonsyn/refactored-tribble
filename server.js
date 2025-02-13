@@ -115,13 +115,15 @@ app.post("/request-film", async (req, res) => {
 });
 app.get("/get-all-id", async (req, res) => {
   try {
-    // Fetch only the `_id` field of all films, sorted by `createdAt` in descending order
-    const filmsId = await Film.find({}, "_id").sort({ createdAt: -1 });
+    // Fetch only the `_id` field of the latest 15 films, sorted by `createdAt` in descending order
+    const filmsId = await Film.find({}, "_id")
+      .sort({ createdAt: -1 })
+      .limit(15);
 
     // Send a success response with the data
     res.status(200).json({
       success: true,
-      message: "Successfully retrieved all film IDs",
+      message: "Successfully retrieved the latest 15 film IDs",
       data: filmsId,
     });
   } catch (error) {
