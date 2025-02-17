@@ -144,7 +144,7 @@ app.get("/get-all-id", async (req, res) => {
     // Send a success response with the data
     res.status(200).json({
       success: true,
-      message: "Successfully retrieved the latest 15 film IDs",
+      message: "Successfully retrieved  film IDs",
       data: filmsId,
     });
   } catch (error) {
