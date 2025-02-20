@@ -138,17 +138,19 @@ app.get("/get-temp-id", async (req, res) => {
 });
 app.get("/get-all-id", async (req, res) => {
   try {
-    // Fetch only the `_id` field of the latest 15 films, sorted by `createdAt` in descending order
-    const filmsId = await Film.find({}, "_id").sort({ createdAt: -1 });
+    const films = await Film.find({}, "_id filmTitle").sort({ createdAt: -1 });
 
-    // Send a success response with the data
+    // Format the response to match the required filmUrl structure
+    const formattedFilms = films.map(({ _id, filmTitle }) => ({
+      filmUrl: `${_id}/${filmTitle.replace(/\s+/g, "-")}`,
+    }));
+
     res.status(200).json({
       success: true,
-      message: "Successfully retrieved  film IDs",
-      data: filmsId,
+      message: "Successfully retrieved film IDs with names",
+      data: formattedFilms,
     });
   } catch (error) {
-    // Handle any errors that occur
     console.error("Error fetching film IDs:", error);
     res.status(500).json({
       success: false,
@@ -157,6 +159,7 @@ app.get("/get-all-id", async (req, res) => {
     });
   }
 });
+
 const port = 2300;
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
