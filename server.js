@@ -147,7 +147,7 @@ app.get("/get-all-id", async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Successfully retrieved film IDs with names",
+      message: "Successfully get the  film IDs with names",
       data: formattedFilms,
     });
   } catch (error) {
