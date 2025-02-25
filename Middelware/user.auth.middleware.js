@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 // Middleware to verify superadmin access
 const authenticateUser = (req, res, next) => {
   const token = req.cookies.user_auth_token; // Expecting 'Bearer <token>'
-
+  console.log(token);
   if (!token) {
     return res.status(401).json({ error: "Authentication token is missing." });
   }
