@@ -17,6 +17,7 @@ connectdb();
 const corsConfig = {
   origin: (origin, callback) => {
     const allowedOrigins = [
+      "http://localhost:3000",
       "https://moodyfilm.netlify.app",
       "https://dudefilms.netlify.app",
     ];

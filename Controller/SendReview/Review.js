@@ -5,7 +5,7 @@ const Review = require("../../Models/Review");
 const sendReview = async (req, res) => {
   try {
     const { filmId, review } = req.body;
-    const { userName, userId } = req.User;
+    const { userName, userId } = req.user;
 
     // Validate required fields
     if (!userId || !filmId || !review) {
@@ -50,7 +50,7 @@ const sendReview = async (req, res) => {
 const likeReview = async (req, res) => {
   try {
     const { reviewId } = req.body;
-    const { userId } = req.User;
+    const { userId } = req.user;
     // Validate inputs
     if (!userId || !reviewId) {
       return res
@@ -102,7 +102,7 @@ const likeReview = async (req, res) => {
 const dislikeReview = async (req, res) => {
   try {
     const { reviewId } = req.body;
-    const { userId } = req.User;
+    const { userId } = req.user;
     // Validate inputs
     if (!userId || !reviewId) {
       return res
@@ -204,8 +204,8 @@ const deleteReview = async (req, res) => {
     // Extract reviewId from the request parameters
     const { reviewId } = req.params;
 
-    // Extract userId from the request user (assumes middleware has added req.User)
-    const { userId } = req.User;
+    // Extract userId from the request user (assumes middleware has added req.user)
+    const { userId } = req.user;
 
     // Find the review by its ID
     const review = await Review.findById(reviewId);
