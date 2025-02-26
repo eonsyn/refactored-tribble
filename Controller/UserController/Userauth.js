@@ -11,7 +11,7 @@ const userLogin = async (req, res) => {
     if (!email || !password) {
       return res
         .status(400)
-        .json({ message: "email and password are required" });
+        .json({ message: "Email and password are required" });
     }
 
     // Check if the user exists
@@ -33,18 +33,18 @@ const userLogin = async (req, res) => {
       { expiresIn: "3d" } // Token expiry
     );
 
-    // Send token in a cookie
+    // Set secure and cross-origin cookie settings
     res
       .cookie("user_auth_token", token, {
-        httpOnly: true, // Prevent access from client-side JavaScript
-        secure: true, // Use secure cookies in production
-        sameSite: "None", // Required for cross-origin cookies
+        httpOnly: true, // Prevents client-side JS from accessing the cookie
+        secure: process.env.NODE_ENV === "production", // Only secure in production
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // "None" for cross-origin, "Lax" for local
         maxAge: 259200000, // 3 days
       })
       .status(200)
       .json({
         message: "Login successful",
-        token: token,
+        token,
         profile: user.profilePhotoInitial,
         username: user.userName,
         name: user.name,

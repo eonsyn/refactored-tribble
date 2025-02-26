@@ -13,22 +13,23 @@ const userRoute = require("./Routes/userRoutes.js");
 
 const app = express();
 connectdb();
-// const corsConfig = {
-//   origin: [
-//     "https://moodyfilm.netlify.app",
-//     "http://localhost:5173",
-//     "https://preeminent-centaur-8c6c49.netlify.app",
-//     "https://preeminent-centaur-8c6c49.netlify.app/",
-//   ],
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "DELETE"],
-// };
+
 const corsConfig = {
-  origin: true, // Allow requests from any origin
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "https://moodyfilm.netlify.app",
+      "https://dudefilms.netlify.app",
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
 };
-// app.options("",cors(corsConfig));
+
 app.use(cors(corsConfig));
 
 app.use(express.json());
